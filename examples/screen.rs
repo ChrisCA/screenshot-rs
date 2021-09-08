@@ -1,12 +1,13 @@
-extern crate bmp;
-extern crate image;
-extern crate screenshot;
+use std::time::Instant;
 
-use bmp::{Image, Pixel};
+use image::Rgb;
+use image::RgbImage;
 use screenshot::get_screenshot;
 
 fn main() {
+    let instant = Instant::now();
     let s = get_screenshot().unwrap();
+    println!("Got screenshot after: {}", instant.elapsed().as_millis()); // 50 - 60 ms
 
     println!(
         "{} x {} x {} = {} bytes",
@@ -28,24 +29,34 @@ fn main() {
     let opp = s.get_pixel(s.height - 1, s.width - 1);
     println!("(end,end): R: {}, G: {}, B: {}", opp.r, opp.g, opp.b);
 
+    println!("Got test pixels after: {}", instant.elapsed().as_millis()); // 5 ms
+
     // WARNING rust-bmp params are (width, height)
-    let mut img = Image::new(s.width as u32, s.height as u32);
+    let mut img = RgbImage::new(s.width as u32, s.height as u32);
     for row in 0..s.height {
         for col in 0..s.width {
             let p = s.get_pixel(row, col);
             // WARNING rust-bmp params are (x, y)
-            img.set_pixel(
-                col as u32,
-                row as u32,
-                Pixel {
-                    r: p.r,
-                    g: p.g,
-                    b: p.b,
-                },
-            );
+            img.put_pixel(col as u32, row as u32, Rgb([p.r, p.g, p.b]));
         }
     }
-    img.save("test.bmp").unwrap();
+
+    // 10 - 15 ms
+    println!(
+        "Transformed image to other type: {}",
+        instant.elapsed().as_millis()
+    );
+
+    img.save_with_format("test.bmp", image::ImageFormat::Bmp)
+        .unwrap();
+    println!(
+        "Saved second image after: {}",
+        instant.elapsed().as_millis()
+    ); // 25 ms
+
+    img.save_with_format("test2.png", image::ImageFormat::Png)
+        .unwrap();
+    println!("Saved first image after: {}", instant.elapsed().as_millis()); // 45 - 55 ms
 
     image::save_buffer(
         "test.png",
@@ -55,4 +66,5 @@ fn main() {
         image::ColorType::Rgba8, // RGBA(8),
     )
     .unwrap();
+    println!("Saved third image after: {}", instant.elapsed().as_millis()); // 45 - 55 ms
 }
