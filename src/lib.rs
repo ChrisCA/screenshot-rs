@@ -4,12 +4,7 @@
 //! The Windows GDI bitmap has its coordinate origin at the bottom left. We
 //! attempt to undo this by reordering the rows. Windows also uses ARGB pixels.
 
-mod bindings {
-    windows::include_bindings!();
-}
-
-use bindings::Windows::Win32::Graphics::Gdi::*;
-use bindings::Windows::Win32::UI::WindowsAndMessaging::*;
+use windows::{Win32::Graphics::Gdi::*, Win32::UI::WindowsAndMessaging::*};
 
 use core::ffi::c_void;
 use std::{error::Error, mem::size_of};
@@ -99,19 +94,8 @@ pub fn get_screenshot() -> Result<Screenshot, Box<dyn Error>> {
 
         // Create a Windows Bitmap, and copy the bits into it
         let h_dc = CreateCompatibleDC(h_dc_screen);
-        if h_dc.is_null() {
-            return Err("Can't get a Windows display.".into());
-        }
-
         let h_bmp = CreateCompatibleBitmap(h_dc_screen, width, height);
-        if h_bmp.is_null() {
-            return Err("Can't create a Windows buffer".into());
-        }
-
-        let res = SelectObject(h_dc, h_bmp);
-        if res.is_null() {
-            return Err("Can't select Windows buffer.".into());
-        }
+        let _ = SelectObject(h_dc, h_bmp);
 
         let res = BitBlt(
             h_dc,
