@@ -89,8 +89,8 @@ pub fn get_screenshot() -> Result<Screenshot, Box<dyn Error>> {
         // loljk, because doing that on Windows is worse than death
         let h_wnd_screen = GetDesktopWindow();
         let h_dc_screen = GetDC(h_wnd_screen);
-        let width = GetSystemMetrics(SYSTEM_METRICS_INDEX(SM_CXSCREEN.0));
-        let height = GetSystemMetrics(SYSTEM_METRICS_INDEX(SM_CYSCREEN.0));
+        let width = GetSystemMetrics(SM_CXSCREEN);
+        let height = GetSystemMetrics(SM_CYSCREEN);
 
         // Create a Windows Bitmap, and copy the bits into it
         let h_dc = CreateCompatibleDC(h_dc_screen);
@@ -106,7 +106,7 @@ pub fn get_screenshot() -> Result<Screenshot, Box<dyn Error>> {
             h_dc_screen,
             0,
             0,
-            ROP_CODE(SRCCOPY.0 | CAPTUREBLT.0),
+            SRCCOPY | CAPTUREBLT,
         );
 
         if !res.as_bool() {
@@ -150,7 +150,7 @@ pub fn get_screenshot() -> Result<Screenshot, Box<dyn Error>> {
             height as u32,
             &mut data[0] as *mut u8 as *mut c_void,
             &mut bmi as *mut BITMAPINFO,
-            DIB_USAGE(DIB_RGB_COLORS.0),
+            DIB_RGB_COLORS,
         );
 
         // Release native image buffers
