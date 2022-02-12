@@ -106,7 +106,7 @@ pub fn get_screenshot() -> Result<Screenshot, Box<dyn Error>> {
             h_dc_screen,
             0,
             0,
-            SRCCOPY | CAPTUREBLT,
+            ROP_CODE(SRCCOPY.0 | CAPTUREBLT.0),
         );
 
         if !res.as_bool() {
